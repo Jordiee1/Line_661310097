@@ -1,0 +1,11 @@
+version: "2"
+authtoken: 37Pe404ULrnbKU7bDTvAvgiC7qv_7r2oybi34Gk3hgVTSTmT8
+tunnels:
+  laravel:
+    addr: apache:80
+    proto: http
+    schemes:
+      - https
+    inspect: true
+web_addr: 0.0.0.0:4040
+

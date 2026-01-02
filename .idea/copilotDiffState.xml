@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CopilotDiffPersistence">
+    <option name="pendingDiffs">
+      <map>
+        <entry key="$PROJECT_DIR$/README.md">
+          <value>
+            <PendingDiffInfo>
+              <option name="filePath" value="$PROJECT_DIR$/README.md" />
+              <option name="updatedContent" value="# docker-compose project-name wrapper&#10;&#10;...existing code...&#10;&#10;Why use this&#10;- Prevent collisions when different projects (anywhere on disk) produce identical Compose project names.&#10;- Works without editing each project's compose files.&#10;&#10;Usage&#10;- Windows PowerShell:&#10;  - Save to a location in PATH or run from this folder:&#10;    .\docker-up.ps1 -Path 'C:\path\to\project' up -d&#10;  - If running inside project folder, omit -Path: .\docker-up.ps1 up -d&#10;- Bash:&#10;  - ./docker-up.sh /path/to/project up -d&#10;  - Or run inside project dir: ./docker-up.sh up -d&#10;&#10;Notes&#10;- Prefer removing `container_name:` entries from docker-compose.yml to let Compose namespace resources automatically.&#10;- If you can change each repo, add a project-scoped `.env` with `COMPOSE_PROJECT_NAME=unique_name`.&#10;- The wrappers compute a unique name as &lt;foldername&gt;_&lt;6-char-hash&gt; derived from absolute path.&#10;" />
+            </PendingDiffInfo>
+          </value>
+        </entry>
+        <entry key="$PROJECT_DIR$/docker-up.ps1">
+          <value>
+            <PendingDiffInfo>
+              <option name="filePath" value="$PROJECT_DIR$/docker-up.ps1" />
+              <option name="updatedContent" value="param(&#10;  [string]$Path = (Get-Location).Path,&#10;  [Parameter(ValueFromRemainingArguments=$true)]&#10;  [string[]]$Args&#10;)&#10;&#10;# compute short hash of the full path&#10;$sha1 = [System.Security.Cryptography.SHA1]::Create()&#10;$bytes = [System.Text.Encoding]::UTF8.GetBytes((Resolve-Path $Path).Path)&#10;$hash = [System.BitConverter]::ToString($sha1.ComputeHash($bytes)).Replace('-','').ToLower().Substring(0,6)&#10;&#10;# sanitize folder name and build project id&#10;$folder = (Get-Item (Resolve-Path $Path)).BaseName -replace '[^a-zA-Z0-9_-]','_'&#10;$project = &quot;$folder`_$hash&quot;&#10;&#10;# run docker compose with explicit project name&#10;cd $Path&#10;docker compose -p $project @Args&#10;" />
+            </PendingDiffInfo>
+          </value>
+        </entry>
+        <entry key="$PROJECT_DIR$/docker-up.sh">
+          <value>
+            <PendingDiffInfo>
+              <option name="filePath" value="$PROJECT_DIR$/docker-up.sh" />
+              <option name="updatedContent" value="#!/usr/bin/env bash&#10;# Usage: ./docker-up.sh [path] up -d&#10;set -euo pipefail&#10;&#10;if [[ $# -ge 1 &amp;&amp; -d &quot;$1&quot; ]]; then&#10;  PROJ_PATH=&quot;$1&quot;; shift&#10;else&#10;  PROJ_PATH=&quot;$PWD&quot;&#10;fi&#10;&#10;ABS_PATH=&quot;$(cd &quot;$PROJ_PATH&quot; &amp;&amp; pwd)&quot;&#10;HASH=&quot;$(printf '%s' &quot;$ABS_PATH&quot; | sha1sum | awk '{print $1}' | cut -c1-6)&quot;&#10;FOLDER=&quot;$(basename &quot;$ABS_PATH&quot; | sed 's/[^a-zA-Z0-9_-]/_/g')&quot;&#10;PROJECT=&quot;${FOLDER}_${HASH}&quot;&#10;&#10;cd &quot;$ABS_PATH&quot;&#10;docker compose -p &quot;$PROJECT&quot; &quot;$@&quot;&#10;" />
+            </PendingDiffInfo>
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+</project>
