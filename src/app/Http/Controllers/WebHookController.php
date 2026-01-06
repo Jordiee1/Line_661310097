@@ -51,23 +51,81 @@ class WebHookController extends Controller
 
 
         if ($intent ==='promotions') {
-        $flex = json_decode(file_get_contents('json/promotions.json'), true);
-        $templateBubble = $flex['contents'][0];
-        $flex['contents'] = [];
-        $promotions = Promotion::limit(10)->get();
-        foreach ($promotions as $promotion) {
-            $bubble = $templateBubble;
-            $bubble['hero']['url'] = asset('/images/'.$promotion->img);
-            $bubble['body']['contents'][0]['text'] = $promotion->name;
-            $bubble['body']['contents'][1]['text'] = 'ถึงวันที่ ' . $promotion->expire_date;
-            $flex['contents'][] = $bubble;
+            $flex = json_decode(file_get_contents('json/promotions.json'), true);
+            $templateBubble = $flex['contents'][0];
+            $flex['contents'] = [];
+            $promotions = Promotion::limit(10)->get();
+            foreach ($promotions as $promotion) {
+                $bubble = $templateBubble;
+                $bubble['hero']['url'] = asset('/images/'.$promotion->img);
+                $bubble['body']['contents'][0]['text'] = $promotion->name;
+                $bubble['body']['contents'][1]['text'] = 'ถึงวันที่ ' . $promotion->expire_date;
+                $flex['contents'][] = $bubble;
+            }
+            $customMessage[] = [
+                'type' => 'flex',
+                'altText' => 'โปรโมชั่น',
+                'contents' => $flex
+            ];
+            $this->replyMessage($replyToken, $customMessage);
         }
-        $customMessage[] = [
-            'type' => 'flex',
-            'altText' => 'โปรโมชั่น',
-            'contents' => $flex
-        ];
-        $this->replyMessage($replyToken, $customMessage);
+
+        // --- ส่วนที่เพิ่มใหม่: แผนผังงาน ---
+        if ($intent === 'workflow_diagram') {
+            $customMessage[] = [
+                'type' => 'image',
+                'originalContentUrl' => asset('images/workflow.jpg'),
+                'previewImageUrl' => asset('images/workflow.jpg')
+            ];
+            $this->replyMessage($replyToken, $customMessage);
+        }
+
+        // --- [ปุ่ม D] เมนูสอบถามเพิ่มเติม ---
+        if ($intent === 'inquiry_menu') {
+            $customMessage[] = [
+                'type' => 'flex',
+                'altText' => 'เมนูสอบถามข้อมูลเพิ่มเติม',
+                'contents' => [
+                    'type' => 'bubble',
+                    'body' => [
+                        'type' => 'box',
+                        'layout' => 'vertical',
+                        'contents' => [
+                            ['type' => 'text', 'text' => 'ยินดีต้อนรับสู่ลานเทเฟส!', 'weight' => 'bold', 'size' => 'xl', 'color' => '#1DB446'],
+                            ['type' => 'text', 'text' => 'เลือกหัวข้อที่ต้องการสอบถามได้เลยค่ะ', 'size' => 'sm', 'color' => '#aaaaaa', 'margin' => 'md'],
+                            ['type' => 'separator', 'margin' => 'lg'],
+                            [
+                                'type' => 'box',
+                                'layout' => 'vertical',
+                                'margin' => 'lg',
+                                'spacing' => 'sm',
+                                'contents' => [
+                                    ['type' => 'button', 'action' => ['type' => 'message', 'label' => '🎫 จองตั๋วยังไง', 'text' => 'จองตั๋วยังไง'], 'style' => 'primary', 'color' => '#1DB446'],
+                                    ['type' => 'button', 'action' => ['type' => 'message', 'label' => '⏰ ลงทะเบียนกี่โมง', 'text' => 'ลงทะเบียนกี่โมง'], 'style' => 'secondary', 'color' => '#f0f0f0'],
+                                    ['type' => 'button', 'action' => ['type' => 'message', 'label' => '📍 สถานที่จัดงาน', 'text' => 'ไปงานยังไง'], 'style' => 'link', 'color' => '#1DB446']
+                                ]
+                            ]
+                        ]
+                    ]
+                ]
+            ];
+            $this->replyMessage($replyToken, $customMessage);
+        }
+
+        // --- ส่วนตอบคำถามย่อย (เมื่อลูกค้ากดถาม) ---
+        if ($intent === 'how_to_book') {
+            $customMessage[] = ['type' => 'text', 'text' => "🎫 วิธีการจองตั๋ว:\n1. เข้าสู่หน้าเว็บไซต์หลัก\n2. เลือกเมนู 'จองตั๋ว'\n3. ชำระเงินผ่าน QR Code\nและรอรับตั๋วผ่านทาง Email ได้เลยค่ะ!"];
+            $this->replyMessage($replyToken, $customMessage);
+        }
+
+        if ($intent === 'register_time') {
+            $customMessage[] = ['type' => 'text', 'text' => "⏰ งานเริ่มลงทะเบียนตั้งแต่เวลา 16:00 น. เป็นต้นไป\n\nอย่าลืมเตรียม QR Code ตั๋วมาแสดงหน้างานด้วยนะคะ!"];
+            $this->replyMessage($replyToken, $customMessage);
+        }
+
+        if ($intent === 'location_info') {
+            $customMessage[] = ['type' => 'text', 'text' => "📍 สถานที่จัดงาน:\nลานเทเฟสติวัล จัดขึ้นที่ ลานประติมากรรม ถนนประติมากรรม มหาวิทยาลัยศิลปากร (เพชรบุรี) ค่ะ"];
+            $this->replyMessage($replyToken, $customMessage);
         }
 
         $customMessage = [];
